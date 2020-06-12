@@ -1,5 +1,7 @@
 package com.example.easyexcel.entity.po;
 
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -7,8 +9,10 @@ import lombok.Data;
  * @Date 2020/6/6 17:28
  */
 @Data
+@TableName("teacher")
 public class Teacher {
 
+    @TableId
     private String id;
     private String name;
     private int sex;
