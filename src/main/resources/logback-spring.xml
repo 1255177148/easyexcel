@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
     <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
-    <springProperty scope="context" name="LOG_HOME" source="log.url" />
-    <property  name="LOG_APP_HOME" value="${LOG_HOME}/app"/>
+    <springProperty scope="context" name="LOG_HOME" source="log.url"/>
+    <property name="LOG_APP_HOME" value="${LOG_HOME}/app"/>
     <property name="LOG_SYS_HOME" value="${LOG_HOME}/sys"/>
     <property name="LOG_ERROR_HOME" value="${LOG_HOME}/error"/>
     <!-- 控制台输出 -->
@@ -13,7 +13,7 @@
         </encoder>
     </appender>
     <!-- 按照每天生成日志文件 -->
-    <appender name="APP"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!--日志文件输出的文件名-->
             <FileNamePattern>${LOG_APP_HOME}/easyExcel.log.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
@@ -28,7 +28,7 @@
         </encoder>
     </appender>
 
-    <appender name="APP_ERROR"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="APP_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
         </filter>
@@ -53,9 +53,9 @@
 
     <logger name="com.example" level="DEBUG"/>
     <root level="INFO">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="APP" />
-        <appender-ref ref="APP_ERROR" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APP"/>
+        <appender-ref ref="APP_ERROR"/>
     </root>
 
     <!--日志异步到数据库 -->
