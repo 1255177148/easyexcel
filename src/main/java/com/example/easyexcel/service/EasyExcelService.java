@@ -16,7 +16,13 @@ public interface EasyExcelService {
 
     /**
      * 从数据库中获取数据并导出
-     * @param response
+     * @param response http请求响应对象
      */
     void outputTeacherData(HttpServletResponse response);
+
+    /**
+     * 从数据库中获取数据并导出到多个sheet中
+     * @param response http请求响应对象
+     */
+    void downloadToSheets(HttpServletResponse response);
 }

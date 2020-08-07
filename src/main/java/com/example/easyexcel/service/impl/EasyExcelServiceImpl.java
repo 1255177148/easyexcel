@@ -1,10 +1,15 @@
 package com.example.easyexcel.service.impl;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.example.easyexcel.entity.excel.StudentExcel;
 import com.example.easyexcel.entity.excel.TeacherExcel;
+import com.example.easyexcel.entity.po.Student;
 import com.example.easyexcel.entity.po.Teacher;
 import com.example.easyexcel.exception.CustomException;
 import com.example.easyexcel.service.EasyExcelService;
+import com.example.easyexcel.service.StudentService;
 import com.example.easyexcel.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +34,9 @@ public class EasyExcelServiceImpl implements EasyExcelService {
     @Autowired
     private TeacherService teacherService;
 
+    @Autowired
+    private StudentService studentService;
+
     @Override
     public void saveTeacher(List<TeacherExcel> list, int batchSize) {
         if (CollectionUtils.isEmpty(list))
@@ -49,9 +57,49 @@ public class EasyExcelServiceImpl implements EasyExcelService {
 
     @Override
     public void outputTeacherData(HttpServletResponse response) {
+        List<TeacherExcel> list = build();
+        buildExcelName(response, "测试", false);
+        try {
+            EasyExcel.write(response.getOutputStream(), TeacherExcel.class).sheet("测试").doWrite(list);
+        } catch (IOException e) {
+            throw new CustomException("导出为excel时报错，报错原因为：" + e.getCause());
+        }
+
+    }
+
+    @Override
+    public void downloadToSheets(HttpServletResponse response) {
+        List<TeacherExcel> list = build();
+        List<Student> studentList = studentService.list();
+        buildExcelName(response, "多个sheet测试", false);
+        ExcelWriter excelWriter = null;
+        try {
+            excelWriter = EasyExcel.write(response.getOutputStream()).build();
+        } catch (IOException e) {
+            throw new CustomException("构建ExcelWriter时报错，报错原因为：" + e.getCause());
+        }
+        // 指定sheet和用哪个类来写
+        WriteSheet writeSheet = EasyExcel.writerSheet(0, "表1").head(TeacherExcel.class).build();
+        excelWriter.write(list, writeSheet);
+        if (!CollectionUtils.isEmpty(studentList)){
+            List<StudentExcel> studentExcels = new ArrayList<>();
+            StudentExcel studentExcel = null;
+            for (Student student : studentList){
+                studentExcel = new StudentExcel();
+                studentExcel.setName(student.getName());
+                studentExcels.add(studentExcel);
+            }
+            writeSheet = EasyExcel.writerSheet(1, "表2").head(StudentExcel.class).build();
+            excelWriter.write(studentExcels, writeSheet);
+        }
+        // 最后关闭流
+        excelWriter.finish();
+    }
+
+    private List<TeacherExcel> build(){
         List<Teacher> teachers = teacherService.list();
         if (CollectionUtils.isEmpty(teachers))
-            return;
+            return new ArrayList<>();
         List<TeacherExcel> list = new ArrayList<>();
         TeacherExcel teacherExcel = null;
         for (Teacher teacher : teachers) {
@@ -62,21 +110,30 @@ public class EasyExcelServiceImpl implements EasyExcelService {
             teacherExcel.setSex(teacher.getSex());
             list.add(teacherExcel);
         }
+        return list;
+    }
+
+    /**
+     * 构建导出的excel表的名字
+     * @param response http请求响应对象
+     * @param name 要导出的excel表文件的名称
+     * @param isXls 导出的excel表的格式是否为xls格式
+     */
+    private void buildExcelName(HttpServletResponse response, String name, boolean isXls){
         // 直接通过response导出到浏览器时会默认下载成一个zip压缩文件而不是excel表格，需要在response header头里加以下几个参数
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         String fileName = null;
         try {
-            fileName = URLEncoder.encode("测试", "UTF-8");
+            fileName = URLEncoder.encode(name, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new CustomException("url encode时报错");
         }
         // 定义浏览器下载时excel表的名字
-        response.setHeader("Content-disposition", "attachment;filename*= UTF-8''" + fileName + ".xlsx");
-        try {
-            EasyExcel.write(response.getOutputStream(), TeacherExcel.class).sheet("测试").doWrite(list);
-        } catch (IOException e) {
-            throw new CustomException("导出为excel时报错，报错原因为：" + e.getCause());
+        if (isXls){
+            response.setHeader("Content-disposition", "attachment;filename*= UTF-8''" + fileName + ".xls");
+        } else {
+            response.setHeader("Content-disposition", "attachment;filename*= UTF-8''" + fileName + ".xlsx");
         }
     }
 }
