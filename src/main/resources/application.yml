@@ -29,7 +29,7 @@ mybatis-plus:
 
 ### 指定日志配置文件
 log:
-  url: easyExcel/
+  url: /home/demo/easyExcel/
 
 server:
   port: 8060
