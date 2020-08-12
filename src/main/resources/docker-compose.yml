@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  demo:
+    image: registry.cn-hangzhou.aliyuncs.com/hezhan/demo:v1.0
+    environment:
+      run_env: "d"
+      TZ: "Asia/Shanghai"
+    ports:
+    - 8060:8060
+    volumes:
+    - /home/demo/easyExcel/:/home/demo/easyExcel/
+    restart: always
+    network_mode: "host"
