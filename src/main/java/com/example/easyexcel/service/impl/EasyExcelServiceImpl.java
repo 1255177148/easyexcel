@@ -11,13 +11,14 @@ import com.example.easyexcel.exception.CustomException;
 import com.example.easyexcel.service.EasyExcelService;
 import com.example.easyexcel.service.StudentService;
 import com.example.easyexcel.service.TeacherService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.UUID;
  * excel数据service类
  */
 @Service
+@Slf4j
 public class EasyExcelServiceImpl implements EasyExcelService {
 
     @Autowired
@@ -96,6 +98,58 @@ public class EasyExcelServiceImpl implements EasyExcelService {
         excelWriter.finish();
     }
 
+    @Override
+    public void downloadTemplate(HttpServletResponse response) {
+        InputStream fileInputStream = null;
+        InputStream fis = null;
+        OutputStream outputStream = null;
+        String fileName = "矾山人员导入模板";
+        try {
+            // 将文件写入输入流
+            //主要ClassPathResource是获取类路径下的文件
+            File file = new File("/home/template/" + fileName + ".xlsx");
+            fileInputStream = new FileInputStream(file);
+            fis = new BufferedInputStream(fileInputStream);
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+            // 清空response
+            response.reset();
+            // 设置response的Header
+            buildExcelName(response, fileName, false);
+            // 告知浏览器文件的大小
+            // response.addHeader("Content-Length", "" + fileInputStream.length());
+            outputStream = new BufferedOutputStream(response.getOutputStream());
+            outputStream.write(buffer);
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("文件下载异常");
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private List<TeacherExcel> build(){
         List<Teacher> teachers = teacherService.list();
         if (CollectionUtils.isEmpty(teachers))
@@ -123,6 +177,7 @@ public class EasyExcelServiceImpl implements EasyExcelService {
         // 直接通过response导出到浏览器时会默认下载成一个zip压缩文件而不是excel表格，需要在response header头里加以下几个参数
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
+        response.addHeader("Access-Control-Allow-Origin", "*");
         String fileName = null;
         try {
             fileName = URLEncoder.encode(name, "UTF-8");

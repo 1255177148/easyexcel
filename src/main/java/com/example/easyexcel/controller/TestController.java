@@ -37,7 +37,7 @@ public class TestController {
     @PostMapping("/import")
     public void importData(@RequestParam("file") MultipartFile file){
         try {
-            EasyExcel.read(file.getInputStream(), TeacherExcel.class, new CommonListen<Teacher>(easyExcelService, "saveTeacher")).sheet().doRead();
+            EasyExcel.read(file.getInputStream(), TeacherExcel.class, new CommonListen<TeacherExcel>("saveTeacher")).sheet().doRead();
         } catch (IOException e) {
             throw new CustomException("将上传的文件转为输入流时报错");
         }
@@ -51,5 +51,10 @@ public class TestController {
     @GetMapping("/downloads")
     public void downloads(HttpServletResponse response){
         easyExcelService.downloadToSheets(response);
+    }
+
+    @GetMapping("/downloadTemplate")
+    public void downloadTemplate(HttpServletResponse response){
+        easyExcelService.downloadTemplate(response);
     }
 }

@@ -25,4 +25,10 @@ public interface EasyExcelService {
      * @param response http请求响应对象
      */
     void downloadToSheets(HttpServletResponse response);
+
+    /**
+     * 下载模板
+     * @param response
+     */
+    void downloadTemplate(HttpServletResponse response);
 }

@@ -2,13 +2,15 @@ package com.example.easyexcel.entity.excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Author Zhanzhan
  * @Date 2020/6/6 17:22
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class TeacherExcel {
+public class TeacherExcel extends CommonExcel {
 
     @ExcelProperty(value = "姓名", index = 0)
     private String name;
