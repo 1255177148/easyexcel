@@ -2,9 +2,9 @@ package com.example.easyexcel.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.example.easyexcel.entity.excel.TeacherExcel;
-import com.example.easyexcel.entity.po.Teacher;
 import com.example.easyexcel.exception.CustomException;
-import com.example.easyexcel.listen.CommonListen;
+import com.example.easyexcel.listen.CommonListener;
+import com.example.easyexcel.module.ImportResult;
 import com.example.easyexcel.service.EasyExcelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -35,9 +35,11 @@ public class TestController {
     @ApiOperation(value = "excel文件上传", notes = "excel文件上传", httpMethod = "POST")
     @ApiImplicitParam(name = "file", value = "excel文件", dataType = "__file", paramType = "form")
     @PostMapping("/import")
-    public void importData(@RequestParam("file") MultipartFile file){
+    public ImportResult importData(@RequestParam("file") MultipartFile file){
         try {
-            EasyExcel.read(file.getInputStream(), TeacherExcel.class, new CommonListen<TeacherExcel>("saveTeacher")).sheet().doRead();
+            CommonListener<TeacherExcel> commonListener = new CommonListener<>("saveTeacher", new TeacherExcel());
+            EasyExcel.read(file.getInputStream(), TeacherExcel.class, commonListener).sheet().doRead();
+            return commonListener.getImportResult();
         } catch (IOException e) {
             throw new CustomException("将上传的文件转为输入流时报错");
         }

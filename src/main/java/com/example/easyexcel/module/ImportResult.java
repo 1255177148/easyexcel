@@ -29,4 +29,9 @@ public class ImportResult {
      * 错误提示
      */
     private List<ImportTips> tips;
+
+    /**
+     * 模板错误提示
+     */
+    private String errorMessage;
 }
