@@ -11,6 +11,7 @@ import com.example.easyexcel.service.EasyExcelService;
 import com.example.easyexcel.util.SpringContextUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +19,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -144,6 +142,10 @@ public class CommonListener<T extends CommonExcel> extends AnalysisEventListener
     public void invoke(T t, AnalysisContext context) {
         if (templateFlag){
             logger.debug("开始处理数据");
+            // 先校验当前读取的行是否是空行
+            if (checkEmpty(t)){
+                return;
+            }
             // 获取行号
             ReadRowHolder readRowHolder = context.readRowHolder();
             Integer rowIndex = readRowHolder.getRowIndex();
@@ -185,6 +187,33 @@ public class CommonListener<T extends CommonExcel> extends AnalysisEventListener
             importResult.setFailTotal(String.valueOf(failTotal.get()));
             logger.debug("所有数据解析保存完毕");
         }
+    }
+
+    /**
+     * 校验当前读取的行是否是空行，也就是所有字段是否是空的
+     * @param data
+     * @return
+     */
+    private boolean checkEmpty(T data){
+        List<Field> fields = Arrays.stream(data.getClass().getDeclaredFields())
+                .filter(f -> f.isAnnotationPresent(ExcelProperty.class))
+                .collect(Collectors.toList());
+        List<Boolean> lineNullList = new ArrayList<>(fields.size());
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Object value = null;
+            try {
+                value = field.get(data);
+            } catch (IllegalAccessException e) {
+                logger.error("使用反射读取导入的当前行数据时报错--->", e);
+            }
+            if (ObjectUtils.isEmpty(value)) {
+                lineNullList.add(Boolean.TRUE);
+            } else {
+                lineNullList.add(Boolean.FALSE);
+            }
+        }
+        return lineNullList.stream().allMatch(Boolean.TRUE::equals);
     }
 
     /**

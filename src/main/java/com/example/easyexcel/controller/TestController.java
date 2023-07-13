@@ -38,7 +38,8 @@ public class TestController {
     public ImportResult importData(@RequestParam("file") MultipartFile file){
         try {
             CommonListener<TeacherExcel> commonListener = new CommonListener<>("saveTeacher", new TeacherExcel());
-            EasyExcel.read(file.getInputStream(), TeacherExcel.class, commonListener).sheet().doRead();
+            // 这里不要忽略空行的来读，因为会校验表头是否符合模板，但如果第一行是空行的话，不会校验表头，所以这里不要忽略空行
+            EasyExcel.read(file.getInputStream(), TeacherExcel.class, commonListener).ignoreEmptyRow(Boolean.FALSE).sheet().doRead();
             return commonListener.getImportResult();
         } catch (IOException e) {
             throw new CustomException("将上传的文件转为输入流时报错");
