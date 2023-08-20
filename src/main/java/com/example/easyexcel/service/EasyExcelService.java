@@ -28,7 +28,13 @@ public interface EasyExcelService {
 
     /**
      * 下载模板
-     * @param response
+     * @param response http请求响应对象
      */
     void downloadTemplate(HttpServletResponse response);
+
+    /**
+     * 从数据库中获取student表的所有数据并导出
+     * @param response http请求响应对象
+     */
+    void outputStudentData(HttpServletResponse response);
 }

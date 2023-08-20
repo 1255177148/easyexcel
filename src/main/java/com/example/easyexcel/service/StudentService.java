@@ -8,4 +8,9 @@ import com.example.easyexcel.entity.po.Student;
  * @Author hezhan
  */
 public interface StudentService extends IService<Student> {
+
+    /**
+     * 初始化50万条数据进数据库
+     */
+    void initStudentData();
 }

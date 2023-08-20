@@ -60,4 +60,9 @@ public class TestController {
     public void downloadTemplate(HttpServletResponse response){
         easyExcelService.downloadTemplate(response);
     }
+
+    @GetMapping("/downloadStudent")
+    public void downloadStudent(HttpServletResponse response){
+        easyExcelService.outputStudentData(response);
+    }
 }

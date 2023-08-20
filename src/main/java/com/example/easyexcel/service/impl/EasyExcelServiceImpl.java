@@ -84,13 +84,7 @@ public class EasyExcelServiceImpl implements EasyExcelService {
         WriteSheet writeSheet = EasyExcel.writerSheet(0, "表1").head(TeacherExcel.class).build();
         excelWriter.write(list, writeSheet);
         if (!CollectionUtils.isEmpty(studentList)){
-            List<StudentExcel> studentExcels = new ArrayList<>();
-            StudentExcel studentExcel = null;
-            for (Student student : studentList){
-                studentExcel = new StudentExcel();
-                studentExcel.setName(student.getName());
-                studentExcels.add(studentExcel);
-            }
+            List<StudentExcel> studentExcels = StudentExcel.valueOf(studentList);
             writeSheet = EasyExcel.writerSheet(1, "表2").head(StudentExcel.class).build();
             excelWriter.write(studentExcels, writeSheet);
         }
@@ -147,6 +141,18 @@ public class EasyExcelServiceImpl implements EasyExcelService {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    @Override
+    public void outputStudentData(HttpServletResponse response) {
+        List<Student> studentList = studentService.list();
+        List<StudentExcel> studentExcels = StudentExcel.valueOf(studentList);
+        buildExcelName(response, "测试", false);
+        try {
+            EasyExcel.write(response.getOutputStream(), StudentExcel.class).sheet("测试").doWrite(studentExcels);
+        } catch (IOException e) {
+            throw new CustomException("导出为excel时报错，报错原因为：" + e.getCause());
         }
     }
 
